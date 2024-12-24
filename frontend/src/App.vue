@@ -1,85 +1,106 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterLink, RouterView, useRouter, type RouteRecordRaw } from 'vue-router'
+import { computed } from 'vue'
+import MainView from '@/views/MainView.vue'
+
+const $router = useRouter()
+
+const NoRouteTitle = 'No Route'
+const noRoute = {
+  path: '/',
+  name: 'main',
+  component: MainView,
+  meta: {
+    title: NoRouteTitle,
+    is_menu: true
+  },
+}
+const routes = $router.getRoutes()
+const menuItems = computed((): RouteRecordRaw[] => {
+  if (routes.length > 0) {
+    return routes.filter((route: RouteRecordRaw) => route.meta?.is_menu === true)
+  }
+  return []
+})
+
+const prepareLoginRoute = () => {
+  const loginRoute = routes.find((route: RouteRecordRaw) => route.name === 'login')
+  return loginRoute ? loginRoute : noRoute
+}
+const loginRoute = prepareLoginRoute()
+const footerCopyright = import.meta.env.VITE_FOOTER_COPYRIGHT;
+const currentYear = new Date().getFullYear()
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <div class="d-flex flex-column min-vh-100">
+    <nav class="py-2 bg-light border-bottom">
+      <div class="container d-flex flex-wrap">
+        <ul class="nav me-auto">
+          <li
+            v-for="item in menuItems"
+            :key="item.path"
+            class="nav-item"
+          >
+            <router-link
+              :to="item.path"
+              class="nav-link link-dark px-2"
+              aria-current="page"
+            >
+              {{ item.meta?.title }}
+            </router-link>
+          </li>
+        </ul>
+        <ul class="nav">
+          <li class="nav-item">
+            <router-link
+              :to="loginRoute.path"
+              class="nav-link link-dark px-2"
+              aria-current="page"
+            >
+              {{ loginRoute.meta.title }}
+            </router-link>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+    <header class="py-3 mb-4 border-bottom">
+      <div class="container d-flex flex-wrap justify-content-center">
+        <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
+          <span class="fs-4">User Balances</span>
+        </a>
+      </div>
+    </header>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
+    <main class="flex-grow-1">
+      <div class="container">
+        <RouterView/>
+      </div>
+    </main>
 
-  <RouterView />
+    <footer class="py-3 border-top bg-light">
+      <div class="container d-flex flex-wrap justify-content-between align-items-center">
+        <p class="col-md-4 mb-0 text-muted">&copy; {{ currentYear }} {{ footerCopyright }}</p>
+      </div>
+    </footer>
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+.d-flex {
+  display: flex;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.flex-column {
+  flex-direction: column;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.min-vh-100 {
+  min-height: 100vh;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.flex-grow-1 {
+  flex: 1;
 }
 </style>

@@ -1,0 +1,61 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: user-bal-app
+        volumes:
+            - ./laravel:/var/www/laravel
+        networks:
+            - app-network
+        environment:
+            - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1
+            - PHP_OPCACHE_MEMORY_CONSUMPTION=128
+        depends_on:
+            - mysql
+            - redis
+
+    mysql:
+        image: mysql:8.2
+        container_name: user-bal-mysql
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root_password
+            MYSQL_DATABASE: user-balances
+            MYSQL_USER: app_user
+            MYSQL_PASSWORD: app_password
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - app-network
+
+    redis:
+        image: redis:alpine
+        container_name: user-bal-redis
+        restart: always
+        ports:
+            - "6379:6379"
+        networks:
+            - app-network
+
+    nginx:
+        image: nginx:alpine
+        container_name: user-bal-nginx
+        restart: always
+        ports:
+            - "80:80"
+        volumes:
+            - ./laravel:/var/www/laravel
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d
+        networks:
+            - app-network
+        depends_on:
+            - app
+volumes:
+    mysql_data:
+
+networks:
+    app-network:
+        driver: bridge

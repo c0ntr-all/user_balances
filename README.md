@@ -43,6 +43,19 @@ php artisan migrate
 php artisan queue:work
 ```
 
+Make commands:
+1. Create user with step-by-step command:
+```shell
+php artisan app:user-create
+```
+2. Balance operations:
+```shell
+php artisan app:balance {login} {operation} {amount} {description}
+```
+Balance operation types:
+- balance_credited - increase balance
+- balance_debited - decrease balance
+
 ## Launch Frontend
 
 Enter frontend folder && install packages:
